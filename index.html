@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>OMR系統</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="test">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--gold:#f5d06f;--line:#3a2c12;--text:#f7e7b3;--muted:#bba676;--blue:#60a5fa;--red:#f87171;--green:#34d399;--orange:#fb923c;--shadow:0 0 0 1px rgba(245,208,111,.10),0 8px 18px rgba(0,0,0,.35)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;min-height:100%;background:radial-gradient(circle at top,#15110a 0%,#080808 35%,#000 100%);font-family:Arial,"Microsoft JhengHei",sans-serif;color:var(--text)}
+.app{max-width:920px;margin:0 auto;padding:8px;display:grid;gap:8px}
+.logo,.side,.main-panel,.predict,.keys-panel,.history-panel{background:linear-gradient(180deg,#171717,#101010);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 12px;background:linear-gradient(180deg,#1a1408,#0d0d0d)}
+.logo-mark{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#111;background:linear-gradient(135deg,#fff2c2,#f5d06f 45%,#b8872e);box-shadow:0 0 12px rgba(245,208,111,.35)}
+.logo-title{color:#fff4cf;font-size:20px;font-weight:900;line-height:1}.logo-sub{color:#bfa56b;font-size:10px;letter-spacing:2px;margin-top:4px}
+.top{display:grid;grid-template-columns:1fr 1fr;gap:8px}.side{padding:10px 8px}.side-title{text-align:center;font-size:16px;font-weight:900;color:#fff2c7;margin-bottom:8px}.side-sub{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.card-cell{height:54px;border-radius:14px;border:1px solid #5a4319;background:linear-gradient(180deg,#1d1d1d,#121212);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff7dd;user-select:none;cursor:pointer}.card-cell.span2{grid-column:1/span 2}.card-cell.active{border-color:var(--gold);box-shadow:0 0 0 2px rgba(245,208,111,.14);background:linear-gradient(180deg,#32270f,#19150d)}.card-cell.empty::after{font-size:12px;font-weight:800;color:#8a7b57}.p1.empty::after{content:"P1"}.p2.empty::after{content:"P2"}.p3.empty::after{content:"P3"}.b1.empty::after{content:"B1"}.b2.empty::after{content:"B2"}.b3.empty::after{content:"B3"}
+.main-panel,.predict,.keys-panel,.history-panel{padding:10px}.info-row{display:grid;grid-template-columns:auto auto 1fr auto auto auto;gap:6px;align-items:center}.badge{min-width:68px;padding:7px 10px;border-radius:999px;font-size:14px;font-weight:900;text-align:center;border:1px solid #4a3717;background:#131313}.badge.player{color:var(--blue)}.badge.banker{color:var(--red)}.winner{font-size:18px;font-weight:900;text-align:center}.winner.player{color:var(--blue)}.winner.banker{color:var(--red)}.winner.tie{color:var(--green)}
+
+.btn{border:none;border-radius:12px;padding:8px 10px;font-size:13px;font-weight:900;cursor:pointer;color:#111;background:linear-gradient(180deg,#f5d06f,#c89b3c)}.btn:active,.key:active,.round-step:active{transform:scale(.97)}.btn-clear{background:linear-gradient(180deg,#e7e5e4,#a8a29e)}.btn-history{background:linear-gradient(180deg,#fda4af,#dc2626);color:#fff}.detail{margin-top:8px;min-height:18px;font-size:14px;color:#d8c28a}
+.predict-line{font-size:27px;font-weight:900;line-height:1.15;color:#fff5d8}.predict-topline{display:flex;align-items:center;justify-content:space-between;gap:8px}.predict-picks{min-width:0;flex:1;white-space:nowrap}.o-label{color:#22d3ee}.m-label{color:var(--red)}.r-label{color:var(--orange)}.predict-meta{margin-top:6px;font-size:14px;line-height:1.45;color:#d8c28a}.trend-wrap{display:flex;gap:4px}.trend-box{min-width:44px;min-height:38px;padding:7px 11px;border:2px solid rgba(255,255,255,.78);border-radius:11px;font-size:18px;font-weight:900;color:#fff;opacity:.72;cursor:pointer}.trend-box.on{opacity:1;box-shadow:0 0 14px rgba(255,255,255,.38)}.trend-box.streak{background:#16a34a}.trend-box.break{background:#dc2626}.trend-box.tie{background:#64748b}
+.stats{margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:linear-gradient(180deg,#191919,#121212);border:1px solid #4a3717;border-radius:14px;padding:10px 6px;text-align:center}.stat.best{border-color:var(--gold);box-shadow:0 0 14px rgba(245,208,111,.20)}.stat-name{font-size:14px;font-weight:900;color:var(--muted)}.stat-rate{margin-top:5px;font-size:20px;font-weight:900}.stat.o .stat-rate{color:#22d3ee}.stat.m .stat-rate{color:var(--red)}.stat.r .stat-rate{color:var(--orange)}
+.heat{margin-top:10px;display:grid;grid-template-columns:1fr auto;gap:8px}.heat-box,.power-box{background:#151515;border:1px solid #4a3717;border-radius:14px;padding:10px 12px;font-size:15px;font-weight:900;color:#e8d2a1}.power-strong{color:#111;background:#ef4444}.power-mid{color:#111;background:#fb923c}.power-low{color:#111;background:#60a5fa}.power-wait{color:#111;background:#9ca3af}
+.key-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.key{border:1px solid #45351a;background:linear-gradient(180deg,#1f1f1f,#121212);border-radius:12px;min-height:44px;font-size:16px;font-weight:900;color:#f9e3a4;cursor:pointer;touch-action:manipulation}.key.skip{color:#d1d5db}
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}.history-title{font-size:16px;font-weight:900;color:#fff1c8}.history-sub{font-size:12px;color:var(--muted)}.history-list{display:flex;flex-direction:column;gap:6px}.history-empty{font-size:14px;color:var(--muted);padding:8px}.h-item{border:1px solid #5a4319;border-radius:14px;background:linear-gradient(180deg,#1b1b1b,#111);padding:8px}.h-top{font-size:12px;color:#d8c28a;margin-bottom:7px;font-weight:900}.h-grid{display:grid;grid-template-columns:minmax(140px,1.35fr) repeat(3,minmax(82px,1fr)) 74px 54px;gap:7px;align-items:stretch}.h-cards{font-size:13px;line-height:1.45}.p-line{color:#93c5fd;font-weight:900}.b-line{color:#fca5a5;font-weight:900}.h-box,.h-result,.h-trend{display:flex;align-items:center;justify-content:center;text-align:center;border-radius:12px;padding:9px 4px;color:#111;font-size:13px;font-weight:900}.h-result{border-radius:999px}.hit{background:#16a34a}.miss{background:#dc2626}.draw{background:#64748b}
+@media(max-width:700px){.app{padding:6px;gap:6px}.logo{padding:8px}.logo-mark{width:34px;height:34px;font-size:14px}.logo-title{font-size:16px}.top{gap:6px}.side{padding:8px 6px}.card-cell{height:48px;font-size:16px}.main-panel,.predict,.keys-panel,.history-panel{padding:8px;border-radius:16px}.info-row{gap:4px;overflow-x:auto}.badge{min-width:52px;font-size:11px;padding:5px 6px}.winner{font-size:15px}.round-box{min-width:142px;padding:4px 5px}.round-input{width:42px;font-size:13px;padding:4px}.round-step{width:28px;height:28px}.btn{font-size:11px;padding:7px 8px}.predict-line{font-size:17px}.predict-picks{font-size:15px}.trend-box{min-width:40px;min-height:34px;padding:6px 7px;font-size:16px}.predict-meta{font-size:10px}.stats{gap:4px;margin-top:8px}.stat{padding:7px 3px}.stat-name{font-size:10px}.stat-rate{font-size:15px}.heat-box,.power-box{font-size:11px;padding:8px}.key-grid{gap:4px}.key{min-height:36px;font-size:12px}.h-item{padding:6px;overflow-x:auto}.h-grid{grid-template-columns:minmax(105px,1.25fr) repeat(3,minmax(58px,.8fr)) 50px 38px;gap:3px;min-width:520px}.h-cards{font-size:10px}.h-box,.h-result,.h-trend{font-size:9px;padding:6px 1px}.h-top{font-size:10px}}
+</style>
+
+<style id="mobile-no-overflow-fix">
+html,body{overflow-x:hidden}
+.app,.top,.side,.main-panel,.predict,.keys-panel,.history-panel{min-width:0;max-width:100%}
+.info-row{grid-template-columns:auto auto minmax(54px,1fr) auto auto}
+.predict-topline{flex-wrap:wrap}
+.predict-picks{white-space:normal;overflow-wrap:anywhere}
+.history-panel,.history-list,.h-item,.h-grid,.h-cards{min-width:0;max-width:100%}
+@media(max-width:700px){
+  .app{width:100%;max-width:100%;padding:4px;gap:5px}
+  .logo{padding:7px 6px}
+  .logo-title{font-size:15px}.logo-sub{font-size:8px;letter-spacing:1px}
+  .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px}
+  .side{min-width:0;padding:6px 4px}
+  .side-title{font-size:12px;margin-bottom:4px}
+  .card-grid{gap:4px}.card-cell{height:43px;min-width:0;font-size:14px}
+  .main-panel,.predict,.keys-panel,.history-panel{padding:6px;border-radius:13px}
+  .info-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;overflow:visible}
+  .info-row .badge,.info-row .winner{min-width:0;width:100%;font-size:11px;padding:6px 2px}
+  .info-row .btn{grid-column:span 1;width:100%;min-width:0;padding:7px 2px;font-size:10px}
+  #nextBtn{grid-column:1 / span 2}
+  #clearBoardBtn{grid-column:3}
+  .detail{font-size:10px;margin-top:5px;min-height:14px}
+  .predict-topline{display:grid;grid-template-columns:1fr;gap:5px}
+  .predict-picks{text-align:center;white-space:normal;font-size:16px;line-height:1.4}
+  .trend-wrap{justify-content:center;width:100%}
+  .trend-box{flex:1;max-width:92px;min-width:0;min-height:32px;padding:5px 4px;font-size:14px}
+  .predict-meta{font-size:9px;line-height:1.35;overflow-wrap:anywhere}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+  .stat{min-width:0;padding:6px 2px}.stat-name{font-size:9px}.stat-rate{font-size:14px}
+  .heat{grid-template-columns:minmax(0,1fr) auto;gap:4px}
+  .heat-box,.power-box{min-width:0;font-size:9px;padding:7px 5px;overflow-wrap:anywhere}
+  .key-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+  .key{min-width:0;min-height:34px;padding:0;font-size:11px;border-radius:8px}
+  .history-head{align-items:flex-start}.history-title{font-size:13px}.history-sub{font-size:9px}
+  .btn-history{font-size:9px;padding:6px}
+  .h-item{overflow:hidden;padding:5px}
+  .h-top{font-size:9px;margin-bottom:4px}
+  .h-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;min-width:0;width:100%}
+  .h-cards{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:9px;line-height:1.25;overflow-wrap:anywhere}
+  .p-line,.b-line{min-width:0;overflow-wrap:anywhere}
+  .h-box,.h-result,.h-trend{min-width:0;font-size:8px;line-height:1.15;padding:5px 1px;border-radius:7px;overflow-wrap:anywhere}
+}
+@media(max-width:390px){
+  .logo-mark{width:31px;height:31px;font-size:12px}
+  .logo-title{font-size:14px}
+  .card-cell{height:40px;font-size:13px}
+  .predict-picks{font-size:14px}
+  .key{font-size:10px;min-height:32px}
+  .h-box,.h-result,.h-trend{font-size:7.5px}
+}
+</style>
+
+<style id="right-small-box-fix">
+@media(max-width:700px){
+  /* 分數、勝負、下一局、清除本局：全部維持同一排，兩個操作鍵放最右側小框 */
+  .info-row{
+    display:grid!important;
+    grid-template-columns:
+      minmax(43px,.72fr)
+      minmax(43px,.72fr)
+      minmax(42px,.72fr)
+      minmax(44px,.68fr)
+      minmax(48px,.78fr)!important;
+    align-items:center!important;
+    gap:3px!important;
+    overflow:visible!important;
+  }
+  .info-row .badge,
+  .info-row .winner,
+  .info-row .btn{
+    grid-column:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:6px 1px!important;
+    font-size:9px!important;
+    line-height:1.1!important;
+    border-radius:8px!important;
+    white-space:nowrap!important;
+  }
+  #nextBtn,#clearBoardBtn{grid-column:auto!important}
+  #clearBoardBtn{font-size:8px!important}
+
+  /* O/M/R 保持左側；連、斷、和保持最右側三個小框，不換行 */
+  .predict-topline{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:3px!important;
+    width:100%!important;
+  }
+  .predict-picks{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    width:auto!important;
+    text-align:left!important;
+    white-space:nowrap!important;
+    font-size:13px!important;
+    line-height:1.15!important;
+    overflow:hidden!important;
+  }
+  .trend-wrap{
+    flex:0 0 auto!important;
+    width:auto!important;
+    justify-content:flex-end!important;
+    gap:2px!important;
+  }
+  .trend-box{
+    flex:none!important;
+    width:29px!important;
+    min-width:29px!important;
+    max-width:29px!important;
+    min-height:29px!important;
+    height:29px!important;
+    padding:0!important;
+    font-size:12px!important;
+    line-height:25px!important;
+    border-radius:7px!important;
+  }
+}
+@media(max-width:390px){
+  .info-row{
+    grid-template-columns:
+      minmax(39px,.7fr)
+      minmax(39px,.7fr)
+      minmax(38px,.68fr)
+      minmax(41px,.66fr)
+      minmax(45px,.76fr)!important;
+    gap:2px!important;
+  }
+  .info-row .badge,.info-row .winner,.info-row .btn{
+    font-size:8px!important;
+    padding:6px 0!important;
+  }
+  #clearBoardBtn{font-size:7.5px!important}
+  .predict-picks{font-size:12px!important}
+  .trend-box{
+    width:27px!important;
+    min-width:27px!important;
+    max-width:27px!important;
+    height:27px!important;
+    min-height:27px!important;
+    font-size:11px!important;
+    line-height:23px!important;
+  }
+}
+</style>
+
+<style id="history-mobile-tune">
+@media(max-width:700px){
+  .history-list{gap:3px!important;}
+  .h-item{padding:4px!important;border-radius:9px!important;}
+  .h-top{font-size:11px!important;margin-bottom:3px!important;}
+  .h-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:2px!important;
+  }
+  .h-cards{
+    grid-column:1/-1!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:2px!important;
+    font-size:11px!important;   /* 放大約2級 */
+    line-height:1.2!important;
+  }
+  .h-box,
+  .h-result,
+  .h-trend{
+    font-size:10px!important;   /* 放大約2級 */
+    line-height:1.1!important;
+    padding:4px 1px!important;
+    border-radius:6px!important;
+  }
+}
+@media(max-width:390px){
+  .h-top{font-size:10px!important;}
+  .h-cards{font-size:10px!important;}
+  .h-box,
+  .h-result,
+  .h-trend{
+    font-size:9px!important;
+    padding:3px 1px!important;
+  }
+}
+</style>
+
+
+<style id="omr-extreme-mobile-history">
+@media(max-width:700px){
+  /* 歷史區整體再縮短約 15～20%，但重要文字更大 */
+  .history-panel{
+    padding:5px!important;
+  }
+  .history-head{
+    margin-bottom:4px!important;
+    gap:4px!important;
+  }
+  .history-title{
+    font-size:14px!important;
+    line-height:1!important;
+  }
+  .history-sub{
+    font-size:9px!important;
+    line-height:1.05!important;
+    margin-top:2px!important;
+  }
+  .btn-history{
+    padding:5px 6px!important;
+    font-size:9px!important;
+    border-radius:7px!important;
+  }
+  .history-list{
+    gap:2px!important;
+  }
+  .h-item{
+    padding:3px 4px!important;
+    border-radius:8px!important;
+  }
+  .h-top{
+    font-size:11px!important;
+    line-height:1!important;
+    margin-bottom:2px!important;
+  }
+  .h-grid{
+    display:grid!important;
+    grid-template-columns:
+      minmax(0,1.08fr)
+      minmax(0,.86fr)
+      minmax(0,.72fr)
+      minmax(0,.72fr)
+      minmax(0,.58fr)!important;
+    gap:2px!important;
+    width:100%!important;
+    min-width:0!important;
+    align-items:stretch!important;
+  }
+  .h-cards{
+    grid-column:auto!important;
+    display:block!important;
+    min-width:0!important;
+    padding:2px 1px!important;
+    font-size:11px!important;
+    line-height:1.12!important;
+    overflow:hidden!important;
+  }
+  .p-line,.b-line{
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .h-box,
+  .h-result,
+  .h-trend{
+    min-width:0!important;
+    padding:3px 1px!important;
+    border-radius:6px!important;
+    font-size:10.5px!important;
+    line-height:1.05!important;
+    overflow:hidden!important;
+    word-break:keep-all!important;
+  }
+  .h-box strong{
+    font-size:11px!important;
+  }
+  /* O 的三段數字維持可辨識但不拉高 */
+  .h-box br{
+    line-height:.65!important;
+  }
+}
+@media(max-width:390px){
+  .history-panel{padding:4px!important}
+  .h-item{padding:3px!important}
+  .h-top{font-size:10px!important}
+  .h-grid{
+    grid-template-columns:
+      minmax(0,1.02fr)
+      minmax(0,.84fr)
+      minmax(0,.70fr)
+      minmax(0,.70fr)
+      minmax(0,.56fr)!important;
+    gap:1.5px!important;
+  }
+  .h-cards{
+    font-size:10px!important;
+  }
+  .h-box,
+  .h-result,
+  .h-trend{
+    font-size:9.5px!important;
+    padding:3px 0!important;
+  }
+  .h-box strong{font-size:10px!important}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="logo"><div class="logo-mark">OMR</div><div><div class="logo-title">OMR系統</div><div class="logo-sub">O COUNT × MATRIX × RUNNING VALUE</div></div></div>
+  <div class="top">
+    <div class="side"><div class="side-title">PLAYER<span class="side-sub">閒家</span></div><div class="card-grid"><div class="card-cell empty p1" data-index="0"></div><div class="card-cell empty p2" data-index="1"></div><div class="card-cell empty p3 span2" data-index="4"></div></div></div>
+    <div class="side"><div class="side-title">BANKER<span class="side-sub">莊家</span></div><div class="card-grid"><div class="card-cell empty b1" data-index="2"></div><div class="card-cell empty b2" data-index="3"></div><div class="card-cell empty b3 span2" data-index="5"></div></div></div>
+  </div>
+  <div class="main-panel"><div class="info-row"><div class="badge player" id="playerScore">閒 0</div><div class="badge banker" id="bankerScore">莊 0</div><div class="winner tie" id="winnerText">和局</div><button id="nextBtn" class="btn" type="button">下一局</button><button id="clearBoardBtn" class="btn btn-clear" type="button">清除本局</button></div><div class="detail" id="detailText">請依序輸入牌面</div></div>
+  <div class="predict">
+    <div class="predict-line predict-topline" id="linePredict"><div class="predict-picks">O:-　M:-　R:-</div><div class="trend-wrap"><button class="trend-box streak" type="button" data-trend="連">連</button><button class="trend-box break" type="button" data-trend="斷">斷</button><button class="trend-box tie" type="button" data-trend="和">和</button></div></div>
+    <div class="predict-meta" id="linePredictMeta">O前總:-／本局:-／全總:-｜M點差:-／公牌:-｜R尾數:-／翻邊:-</div>
+    <div class="stats" id="lineStats"></div>
+    <div class="heat"><div class="heat-box" id="heatBox">熱區判斷：目前尚無資料</div><div class="power-box power-wait" id="powerBox">下注：觀望</div></div>
+  </div>
+  <div class="keys-panel"><div class="key-grid" id="cardButtons"><button class="key" data-card="A">A</button><button class="key" data-card="2">2</button><button class="key" data-card="3">3</button><button class="key" data-card="4">4</button><button class="key" data-card="5">5</button><button class="key" data-card="6">6</button><button class="key" data-card="7">7</button><button class="key" data-card="8">8</button><button class="key" data-card="9">9</button><button class="key" data-card="10">10</button><button class="key" data-card="J">J</button><button class="key" data-card="Q">Q</button><button class="key" data-card="K">K</button><button class="key skip" id="skipBtn" type="button">不補</button></div></div>
+  <div class="history-panel"><div class="history-head"><div><div class="history-title">歷史紀錄</div><div class="history-sub">最近15筆｜O / M / R｜連 / 斷 / 和</div></div><button id="clearHistoryBtn" class="btn btn-history" type="button">清除歷史</button></div><div class="history-list" id="historyList"></div></div>
+</div>
+<script>
+(function(){
+'use strict';
+const STORAGE_KEY='omr_standalone_v1',MAX_HISTORY=15;
+let values=['','','','','',''],order=[0,1,2,3,4,5],currentStep=0,selectedIndex=null,historyData=[],pendingPrediction=null,manualTrend='-',oCumulative=0;
+const $=id=>document.getElementById(id),cells=[...document.querySelectorAll('.card-cell')];
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({values,currentStep,selectedIndex,historyData,pendingPrediction,manualTrend,oCumulative}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');if(Array.isArray(d.values)&&d.values.length===6)values=d.values;currentStep=Number.isInteger(d.currentStep)?d.currentStep:0;selectedIndex=Number.isInteger(d.selectedIndex)?d.selectedIndex:null;historyData=Array.isArray(d.historyData)?d.historyData.slice(0,MAX_HISTORY):[];pendingPrediction=d.pendingPrediction||null;manualTrend=['連','斷','和'].includes(d.manualTrend)?d.manualTrend:'-';oCumulative=Number(d.oCumulative)||0}catch(e){}}
+function val(c){if(c==='A')return 1;if(['10','J','Q','K'].includes(c))return 0;return parseInt(c,10)||0}
+function cards(side){const idx=side==='P'?[0,1,4]:[2,3,5];return idx.map(i=>values[i]).filter(Boolean)}
+function total(a){return a.reduce((s,c)=>s+val(c),0)%10}
+function actual(p,b){return p>b?'閒':b>p?'莊':'和'}
+function status(pred,res){if(res==='和'||!['閒','莊'].includes(pred))return '-';return pred===res?'準':'失敗'}
+function oCard(c){if(['A','2','3','4'].includes(c))return 1;if(['7','8','9'].includes(c))return -1;return 0}
+function evalO(all){const current=all.reduce((s,c)=>s+oCard(c),0),allTotal=oCumulative+current;return{previous:oCumulative,current,total:allTotal,pick:allTotal>0?'閒':allTotal<0?'莊':'觀望',meta:`前面加總:${oCumulative}／當局加總:${current}／全部加總:${allTotal}`}}
+function evalM(p,b,all){if(p.length<2||b.length<2)return{pick:'待輸入',diff:null,publicCount:null};const pr=p.reduce((s,c)=>s+val(c),0),br=b.reduce((s,c)=>s+val(c),0),diff=pr-br,pub=all.filter(c=>['10','J','Q','K'].includes(c)).length;return{pick:((diff>=0)===(pub%2===0))?'閒':'莊',diff,publicCount:pub}}
+function evalR(p,b,all){if(p.length<2||b.length<2)return{pick:'待輸入',tail:null,flip:false};const tail=(p.reduce((s,c)=>s+val(c),0)%10)+(b.reduce((s,c)=>s+val(c),0)%10),pub=all.filter(c=>['10','J','Q','K'].includes(c)).length,flip=all.length===5||all.length===6||(all.length===4&&pub===0);let pick=tail===19?'閒':'莊';if(flip)pick=pick==='閒'?'莊':'閒';return{pick,tail,flip}}
+function state(){const p=cards('P'),b=cards('B'),all=p.concat(b),pt=p.length>=2?total(p):null,bt=b.length>=2?total(b):null;return{p,b,all,pt,bt,res:pt===null||bt===null?'-':actual(pt,bt),o:evalO(all),m:evalM(p,b,all),r:evalR(p,b,all)}}
+function pickHtml(n,p){const cls=n==='O'?'o-label':n==='M'?'m-label':'r-label',color=p==='閒'?'#60a5fa':p==='莊'?'#f87171':'#9ca3af';return `<span class="${cls}">${n}:</span><span style="color:${color}">${p}</span>`}
+function calcRate(key){const v=historyData.filter(x=>x.actual!=='和'&&['準','失敗'].includes(x[key+'Status']));return{rate:v.length?Math.round(v.filter(x=>x[key+'Status']==='準').length/v.length*100):0,total:v.length}}
+function renderStats(){const rows=[['o','O勝率'],['m','M勝率'],['r','R勝率']].map(([k,n])=>({k,n,...calcRate(k)})),max=Math.max(...rows.map(x=>x.rate));$('lineStats').innerHTML=rows.map(x=>`<div class="stat ${x.k}${x.rate===max&&max>0?' best':''}"><div class="stat-name">${x.n}</div><div class="stat-rate">${x.rate}%</div></div>`).join('');$('heatBox').textContent=max?`熱區判斷：${rows.filter(x=>x.rate===max).map(x=>x.n.replace('勝率','')).join(' / ')} 發威中（${max}%）`:'熱區判斷：目前尚無資料'}
+function renderHistory(){let items=[];if(pendingPrediction)items.push({...pendingPrediction,actual:'-',oStatus:'-',mStatus:'-',rStatus:'-',live:true});items=items.concat(historyData).slice(0,MAX_HISTORY);$('historyList').innerHTML=items.length?items.map(x=>{const cls=s=>s==='準'?'hit':s==='失敗'?'miss':'draw',ac=x.actual==='閒'?'hit':x.actual==='莊'?'miss':'draw',tc=x.trend==='連'?'hit':x.trend==='斷'?'miss':'draw';return `<div class="h-item"><div class="h-top">預測下一局${x.live?'（待開）':''}</div><div class="h-grid"><div class="h-cards"><div class="p-line">閒：${x.player||'-'} [${x.playerTotal??'-'}點]</div><div class="b-line">莊：${x.banker||'-'} [${x.bankerTotal??'-'}點]</div></div><div class="h-box ${cls(x.oStatus)}"><strong>O</strong><br>${x.oPick||'-'}<br>[${x.oPrevious??'-'}/${x.oCurrent??'-'}/${x.oTotal??'-'}]<br>（${x.oStatus}）</div><div class="h-box ${cls(x.mStatus)}"><strong>M</strong><br>${x.mPick||'-'}<br>（${x.mStatus}）</div><div class="h-box ${cls(x.rStatus)}"><strong>R</strong><br>${x.rPick||'-'}<br>（${x.rStatus}）</div><div class="h-result ${ac}">實際：${x.actual==='-'?'待開':x.actual}</div><div class="h-trend ${tc}">${x.trend||'-'}</div></div></div>`}).join(''):'<div class="history-empty">目前還沒有歷史紀錄</div>'}
+function render(){const s=state();cells.forEach(c=>{const i=+c.dataset.index,v=values[i];c.textContent=v;c.classList.toggle('empty',!v);c.classList.toggle('active',selectedIndex===i||(selectedIndex===null&&order[currentStep]===i&&currentStep<6))});$('playerScore').textContent='閒 '+(s.pt??0);$('bankerScore').textContent='莊 '+(s.bt??0);$('winnerText').textContent=s.res==='閒'?'閒贏':s.res==='莊'?'莊贏':'和局';$('winnerText').className='winner '+(s.res==='閒'?'player':s.res==='莊'?'banker':'tie');$('detailText').textContent=s.p.length<2||s.b.length<2?'請依序輸入牌面':'本局牌面已可計算';const shown=pendingPrediction||s;$('linePredict').innerHTML=`<div class="predict-picks">${pickHtml('O',shown.oPick||shown.o.pick)}　${pickHtml('M',shown.mPick||shown.m.pick)}　${pickHtml('R',shown.rPick||shown.r.pick)}</div><div class="trend-wrap"><button class="trend-box streak${manualTrend==='連'?' on':''}" type="button" data-trend="連">連</button><button class="trend-box break${manualTrend==='斷'?' on':''}" type="button" data-trend="斷">斷</button><button class="trend-box tie${manualTrend==='和'?' on':''}" type="button" data-trend="和">和</button></div>`;const o=shown.oMeta||shown.o.meta,mDiff=shown.mDiff??shown.m.diff,mPub=shown.mPublic??shown.m.publicCount,rTail=shown.rTail??shown.r.tail,rFlip=shown.rFlip??shown.r.flip;$('linePredictMeta').textContent=`O${o||'前總:-／本局:-／全總:-'}｜M點差:${mDiff??'-'}／公牌:${mPub??'-'}｜R尾數:${rTail??'-'}／翻邊:${rFlip===true?'是':rFlip===false?'否':'-'}`;renderStats();renderHistory();save()}
+function inputCard(c){if(selectedIndex!==null){values[selectedIndex]=c;selectedIndex=null}else if(currentStep<6){values[order[currentStep]]=c;currentStep++}render()}
+function skip(){if(selectedIndex!==null){values[selectedIndex]='';selectedIndex=null}else if(currentStep<6)currentStep++;render()}
+function next(){const s=state();if(s.p.length<2||s.b.length<2){alert('請至少輸入閒家與莊家的前兩張牌。');return}if(pendingPrediction){historyData.unshift({...pendingPrediction,actual:s.res,oStatus:status(pendingPrediction.oPick,s.res),mStatus:status(pendingPrediction.mPick,s.res),rStatus:status(pendingPrediction.rPick,s.res)});historyData=historyData.slice(0,MAX_HISTORY)}pendingPrediction={player:s.p.join(' '),banker:s.b.join(' '),playerTotal:s.pt,bankerTotal:s.bt,trend:manualTrend,oPick:s.o.pick,oPrevious:s.o.previous,oCurrent:s.o.current,oTotal:s.o.total,oMeta:s.o.meta,mPick:s.m.pick,mDiff:s.m.diff,mPublic:s.m.publicCount,rPick:s.r.pick,rTail:s.r.tail,rFlip:s.r.flip};oCumulative=s.o.total;values=['','','','','',''];currentStep=0;selectedIndex=null;manualTrend='-';render()}
+$('cardButtons').addEventListener('click',e=>{const b=e.target.closest('[data-card]');if(b)inputCard(b.dataset.card)});$('skipBtn').addEventListener('click',skip);$('nextBtn').addEventListener('click',next);$('clearBoardBtn').addEventListener('click',()=>{values=['','','','','',''];currentStep=0;selectedIndex=null;render()});$('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('確定清除歷史並將 O 累積歸零嗎？'))return;historyData=[];pendingPrediction=null;oCumulative=0;manualTrend='-';values=['','','','','',''];currentStep=0;selectedIndex=null;render()});cells.forEach(c=>c.addEventListener('click',()=>{selectedIndex=+c.dataset.index;render()}));document.addEventListener('click',e=>{const b=e.target.closest('[data-trend]');if(b){manualTrend=b.dataset.trend;render()}});
+load();render();
+})();
+</script>
+</body>
+</html>
